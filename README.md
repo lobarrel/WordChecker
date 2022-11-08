@@ -22,7 +22,8 @@ Then, the program reads a sequence of matches. The command to start a new match 
 Inside each match the program reads:
 - A secret word (the word to guess, we will call it "R")
 - The maximum number of words to guess the secret word ("n")
-- A sequence of words (of length k) to compare with the secret word (we will call each of this words "P")
+- A sequence of words (of length k) to compare with the secret word (we will call each of this words "P").
+
 The program can also read the command "+stampa_filtrate" which is explained later.
 
 For each word P which has to be compared to the secret word R, the program prints on the standard output a sequence of k characters with the following criteria:
