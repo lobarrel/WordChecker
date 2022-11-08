@@ -28,7 +28,7 @@ typedef struct List{
 
 
 
-//FUNZIONI LISTA
+//LIST FUNCTIONS
 
 List* push(List* head, char* w, int len){
     List* tmp;
@@ -62,8 +62,8 @@ List* insertInList(List* head, char* w, int len){
                 n->next = p->next;
                 p->next = n;
             }
-        }else printf("errore allocazione");
-    }else printf("errore allocazione");
+        }else printf("memory allocation error");
+    }else printf("memory allocation error");
 
     return head;
 }
@@ -82,13 +82,12 @@ List* emptyList(List* head){
 
 
 
-//FUNZIONI RED-BLACK TREE
+//RED-BLACK TREE FUNCTIONS
 
 RBNode* newRBNode(char * w, int len)
 {
 
     RBNode *temp = (RBNode*) malloc(sizeof(RBNode)+len+1);
-    //temp->word = (char*) malloc(len+1);
     strcpy(temp->word, w);
     temp->color  = RED;
     temp->left   = NULL;
@@ -251,26 +250,26 @@ void RBInsert(RBNode** T, char * w, int len)
 }
 
 int searchWord(RBNode* x, char * w){
-    int trovata = 0;
+    int found = 0;
     int r;
-    while(x != T_Nil && trovata == 0){
+    while(x != T_Nil && found == 0){
         r = strcmp(w, x->word);
         if(r == 0)
-            trovata = 1;
+            found = 1;
         else if(r<0)
             x = x->left;
         else
             x = x->right;
     }
 
-    return trovata;
+    return found;
 }
 
 
 
-//FUNZIONI WORD-CHECKER
+//WORD-CHECKER FUNCTIONS
 
-void confrontaParole(const char* r, char* p, char * output, int** v, int len, int* min, int* ex){
+void compareWords(const char* r, char* p, char * output, int** v, int len, int* min, int* ex){
     int i, j, h;
     int curr_count, tmp_count;
     char currChar;
@@ -300,7 +299,7 @@ void confrontaParole(const char* r, char* p, char * output, int** v, int len, in
                     curr_count++;
                 }
             }
-            //tmp[idx(currChar)] += curr_count;
+            
             tmp_count = curr_count;
 
             for(j = 0; r[j] != '\0'; j++){
@@ -332,13 +331,13 @@ void confrontaParole(const char* r, char* p, char * output, int** v, int len, in
             min[i] = tmp[i];
 }
 
-void stampaFiltrate(List* head){
+void printFiltered(List* head){
     List* tmp;
     for(tmp = head; tmp != NULL; tmp = tmp->next){
         fprintf(stdout, "%s\n", tmp->word);
     }
 }
-void stampaAmmissibili(RBNode* x){
+void printVocabulary(RBNode* x){
 
     RBNode* curr = RBMinimum(x);
     while(curr != T_Nil){
@@ -347,31 +346,31 @@ void stampaAmmissibili(RBNode* x){
     }
 }
 
-int isCompatibile(char* w, int** v, const int* min, const int* ex){
+int isCompatible(char* w, int** v, const int* min, const int* ex){
     int tmp[NUM_SYMBOLS];
-    int i, compatibile;
+    int i, compatible;
 
     for(i = 0; i < NUM_SYMBOLS; i++)
         tmp[i] = 0;
-    compatibile = 1;
+    compatible = 1;
 
     for(i = 0; w[i] != '\0'; i++){
         if(v[w[i]-ZEROCHAR][i] == 0)
-            compatibile = 0;
+            compatible = 0;
         tmp[w[i]-ZEROCHAR]++;
     }
-    for(i = 0; i < NUM_SYMBOLS && compatibile; i++){
+    for(i = 0; i < NUM_SYMBOLS && compatible; i++){
         if((min[i] > 0 && tmp[i] < min[i]) || (ex[i] > -1 && tmp[i] > ex[i]))
-            compatibile = 0;
+            compatible = 0;
     }
-    return compatibile;
+    return compatible;
 }
 
-List* filtra1(RBNode* root, List* head, int** v, int* min, int* ex, int * count, int len) {
+List* filter1(RBNode* root, List* head, int** v, int* min, int* ex, int * count, int len) {
 
     RBNode* curr = RBMaximum(root);
     while (curr != T_Nil) {
-        if (isCompatibile(curr->word, v, min, ex)) {
+        if (isCompatible(curr->word, v, min, ex)) {
             head = push(head, curr->word, len);
             (*count)++;
         }
@@ -379,11 +378,11 @@ List* filtra1(RBNode* root, List* head, int** v, int* min, int* ex, int * count,
     }
     return head;
 }
-List* filtra2(List* head, int** v, int* min, int* ex, int * count){
+List* filter2(List* head, int** v, int* min, int* ex, int * count){
 
     List* tmp;
     List* del;
-    while(head != NULL && isCompatibile(head->word, v, min, ex) == 0){
+    while(head != NULL && isCompatible(head->word, v, min, ex) == 0){
         del = head;
         head = head->next;
         free(del->word);
@@ -392,7 +391,7 @@ List* filtra2(List* head, int** v, int* min, int* ex, int * count){
     }
     tmp = head;
     while(tmp != NULL && tmp->next != NULL){
-        while(tmp->next != NULL && isCompatibile(tmp->next->word, v, min, ex) == 0){
+        while(tmp->next != NULL && isCompatible(tmp->next->word, v, min, ex) == 0){
             del = tmp->next;
             tmp->next = del->next;
             free(del->word);
@@ -410,14 +409,14 @@ List* filtra2(List* head, int** v, int* min, int* ex, int * count){
 int main() {
 
     int k;
-    int num_tentativi, i, j, first_time, count_filtrate;
+    int n, i, j, first_time, count_filtered;
     char word[MAX_LEN];
-    RBNode * ammissibili = T_Nil;
-    List * filtrate = NULL;
-    int ** vincoli;
+    RBNode * vocabulary = T_Nil;
+    List * filtered_words = NULL;
+    int ** constraints;
     int min_count[NUM_SYMBOLS], ex_count[NUM_SYMBOLS];
-    char * parola_rif, * res;
-    int fine_partita;
+    char * word_ref, * res;
+    int end_match;
     int unused __attribute__((unused));
 
 
@@ -425,24 +424,24 @@ int main() {
 
     unused = fscanf(stdin, "%d\n", &k);
 
-    //ALLOCAZIONI
-    parola_rif = (char*)malloc(sizeof(char) * (k));
+    //MEMORY ALLOCATIONS
+    word_ref = (char*)malloc(sizeof(char) * (k));
     res = (char*)malloc(sizeof(char) * (k));
-    vincoli = (int**)malloc(sizeof(int*)*NUM_SYMBOLS);
+    constraints = (int**)malloc(sizeof(int*)*NUM_SYMBOLS);
     for(i = 0; i<NUM_SYMBOLS; i++)
-        vincoli[i] = (int*)malloc(sizeof(int) * k);
+        constraints[i] = (int*)malloc(sizeof(int) * k);
 
 
 
     while(fscanf(stdin, "%s", word) != EOF){
 
-        //INSERIMENTO DIZIONARIO
+        //INSERT WORDS IN THE VOCABULARY
         if(word[0] != '+'){
-            RBInsert(&ammissibili, word, k);
+            RBInsert(&vocabulary, word, k);
         }
 
 
-            //NUOVA PARTITA
+        //NEW MATCH
         else if(word[1] == 'n'){
 
             for(i = 0; i < NUM_SYMBOLS; i++){
@@ -452,38 +451,38 @@ int main() {
                     vincoli[i][j] = 1;
             }
             i = 0;
-            fine_partita = 0;
+            end_match = 0;
             first_time = 1;
 
 
 
-            unused = fscanf(stdin, "%s", parola_rif);
-            unused = fscanf(stdin, "%d\n", &num_tentativi);
-            while(fine_partita == 0){
+            unused = fscanf(stdin, "%s", word_ref);
+            unused = fscanf(stdin, "%d\n", &n);
+            while(end_match == 0){
                 unused = fscanf(stdin, "%s", word);
                 if(word[0] != '+'){
 
-                    if (strcmp(word, parola_rif) == 0) {
+                    if (strcmp(word, word_ref) == 0) {
                         fprintf(stdout, "ok\n");
-                        fine_partita = 1;
-                    }else if (searchWord(ammissibili, word)) {
-                        confrontaParole(parola_rif, word, res, vincoli, k, min_count, ex_count);
+                        end_match = 1;
+                    }else if (searchWord(vocabulary, word)) {
+                        compareWords(word_ref, word, res, constraints, k, min_count, ex_count);
 
                         if(first_time){
-                            count_filtrate = 0;
-                            filtrate = filtra1(ammissibili, filtrate, vincoli, min_count, ex_count, &count_filtrate, k);
+                            count_filtered = 0;
+                            filtered_words = filter1(vocabulary, filtered_words, constraints, min_count, ex_count, &count_filtered, k);
                             first_time = 0;
                         }else{
-                            filtrate = filtra2(filtrate, vincoli, min_count, ex_count, &count_filtrate);
+                            filtered_words = filter2(filtered_words, constraints, min_count, ex_count, &count_filtered);
                         }
 
                         i++;
-                        fprintf(stdout, "%s\n%d\n", res, count_filtrate);
+                        fprintf(stdout, "%s\n%d\n", res, count_filtered);
 
 
-                        if (i >= num_tentativi) {
+                        if (i >= n) {
                             fprintf(stdout, "ko\n");
-                            fine_partita = 1;
+                            end_match = 1;
                         }
 
                     }else {
@@ -491,44 +490,46 @@ int main() {
                     }
                 }
 
+                //INSERT NEW WORDS
                 else if(word[1] == 'i'){
                     unused = fscanf(stdin, "%s", word);
                     while (word[0] != '+') {
-                        RBInsert(&ammissibili, word, k);
+                        RBInsert(&vocabulary, word, k);
                         if(first_time == 0){
-                            if (isCompatibile(word, vincoli, min_count, ex_count)) {
-                                filtrate = insertInList(filtrate, word, k);
-                                count_filtrate++;
+                            if (isCompatible(word, constraints, min_count, ex_count)) {
+                                filtered_words = insertInList(filtered_words, word, k);
+                                count_filtered++;
                             }
                         }
                         unused = fscanf(stdin, "%s", word);
                     }
                 }
-
+                
+                //PRINT FILTERED WORDS
                 else if (word[1] == 's') {
                     if(first_time){
-                        stampaAmmissibili(ammissibili);
+                        printVocabulary(vocabulary);
                     }else{
-                        stampaFiltrate(filtrate);
+                        printFiltered(filtered_words);
                     }
                 }
             }
-            filtrate = emptyList(filtrate);
+            filtered_words = emptyList(filtered_words);
         }
 
 
-            //INSERIMENTO NUOVE PAROLE
+        //INSERT NEW WORDS
         else if(word[1] == 'i'){
             unused = fscanf(stdin, "%s", word);
             while (word[0] != '+') {
-                RBInsert(&ammissibili, word, k);
+                RBInsert(&vocabulary, word, k);
                 unused = fscanf(stdin, "%s", word);
             }
         }
     }
 
-    free(parola_rif);
-    free(vincoli);
+    free(word_ref);
+    free(constraints);
     free(res);
 
     return 0;
