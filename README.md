@@ -5,6 +5,7 @@ The goal of the project was to implement the theoretical concepts learned during
 
 In the repo you can also find some input examples (and the expected output) to test the code.
 
+
 # Assignment
 
 At its core, the program checks the correspondance of letters between two words of the same length. Each word is a sequence of alphabetical characters (a-z, A-Z), digits (0-9), and special symbols (-, _).
